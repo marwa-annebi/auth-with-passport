@@ -1,3 +1,4 @@
+import { JwtAuthGuard } from './../auth/jwt-auth.guard';
 import { AuthService } from './../auth/auth.service';
 import {
   Controller,
@@ -16,6 +17,11 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ValidateUserDto } from './dto/validate-user.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { LocalAuthGuard } from 'src/auth/local-auth.guard';
+import { Roles } from 'src/roles/role.decorator';
+import { Role } from 'src/roles/role.enum';
+import { promisify } from 'util';
+import { createCipheriv, randomBytes, scrypt } from 'crypto';
 
 @Controller('users')
 export class UsersController {
@@ -30,6 +36,7 @@ export class UsersController {
   }
 
   @Get()
+  @Roles(Role.Admin)
   findAll() {
     return this.usersService.findAll();
   }
@@ -53,9 +60,14 @@ export class UsersController {
   vaidateUser(@Body() validateUserDto: ValidateUserDto) {
     return this.authService.validateUser(validateUserDto);
   }
-  @UseGuards(AuthGuard('local'))
-  @Post('auth/login')
+  @UseGuards(LocalAuthGuard)
+  @Post('/auth/login')
   async login(@Request() req) {
-    return req.user;
+    return this.authService.login(req.user);
+  }
+
+  @Post('/encryption')
+  async encryption(@Body('textToEncrypt') textToEncrypt: string) {
+    return this.usersService.encryption(textToEncrypt);
   }
 }

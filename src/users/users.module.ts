@@ -5,6 +5,8 @@ import { UsersController } from './users.controller';
 import { User, UserSchema } from './entities/user.entity';
 import { AuthModule } from '../auth/auth.module';
 import { AuthService } from '../auth/auth.service';
+import { APP_GUARD } from '@nestjs/core';
+import { RoleGuard } from 'src/roles/role.guard';
 
 @Module({
   imports: [
